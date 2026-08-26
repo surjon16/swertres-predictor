@@ -8,11 +8,22 @@ because the "signal" was fit to noise in a specific historical slice.
 
 Layers (each layer searches over candidate subsets of the CURRENT slice,
 picks whichever subset has the smallest p-value, and drills into it):
-  Layer 0: full train set, by (draw_slot, digit_position)          [9 tests]
-  Layer 1: split further by weekday of the draw date                [x7]
-  Layer 2: split further by year                                    [x~5]
-  Layer 3: split further by month                                   [x12]
-  Layer 4: split further by odd/even day-of-month                   [x2]
+  Layer 0:  full train set, by (draw_slot, digit_position)          [9 tests]
+  Layer 1:  split further by weekday of the draw date                [x7]
+  Layer 2:  split further by year                                    [x~5]
+  Layer 3:  split further by month                                   [x12]
+  Layer 4:  split further by odd/even day-of-month                   [x2]
+  Layer 5:  split further by quarter                                 [x4]
+  Layer 6:  split further by ISO week parity (odd/even week #)       [x2]
+  Layer 7:  split further by half of month (1-15 vs 16-31)           [x2]
+  Layer 8:  split further by weekend vs weekday                      [x2]
+  Layer 9:  split further by semester (Jan-Jun vs Jul-Dec)           [x2]
+  Layer 10: split further by week-of-month occurrence (1st..5th)     [x5]
+
+In practice this will run out of usable sample size (our test refuses to
+run chi-square on n<20) well before layer 10 -- that exhaustion is itself
+part of the point: real signal should get MORE significant with more
+data, not disappear because you ran out of rows to slice.
 
 At each layer we keep whichever single sub-slice has the lowest p-value
 so far and recurse into it -- this is deliberately how p-hacking works in
@@ -63,8 +74,17 @@ def main():
     train["year"] = train["date"].dt.year
     train["month"] = train["date"].dt.month
     train["day_parity"] = train["date"].dt.day % 2  # 0=even, 1=odd
+    train["quarter"] = train["date"].dt.quarter
+    train["iso_week_parity"] = train["date"].dt.isocalendar().week % 2
+    train["half_of_month"] = (train["date"].dt.day > 15).astype(int)  # 0=1st half, 1=2nd half
+    train["is_weekend"] = train["date"].dt.dayofweek.isin([5, 6]).astype(int)
+    train["semester"] = (train["date"].dt.month > 6).astype(int)  # 0=Jan-Jun, 1=Jul-Dec
+    train["week_of_month"] = ((train["date"].dt.day - 1) // 7) + 1  # 1st..5th occurrence of weekday
 
-    layer_cols = ["weekday", "year", "month", "day_parity"]
+    layer_cols = [
+        "weekday", "year", "month", "day_parity", "quarter",
+        "iso_week_parity", "half_of_month", "is_weekend", "semester", "week_of_month",
+    ]
 
     # Layer 0: find the single most "significant-looking" (slot, position) combo
     layer0 = []
