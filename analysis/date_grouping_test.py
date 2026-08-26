@@ -30,7 +30,7 @@ import pandas as pd
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "swertres_history_combined.csv"
 HOLDOUT_N = 10
 DIGIT_COLS = ["d1", "d2", "d3"]
-N_GUESSES = 3
+N_GUESSES = 5
 
 
 def ranked_digits(subset: pd.DataFrame, col: str, ascending: bool) -> list[str]:
@@ -106,7 +106,7 @@ def main():
     print(detail_df.to_string(index=False))
     print()
 
-    print("=== Summary: hits / 10 (mode=1 guess, cold/hot=3 guesses, random=3 guesses) ===")
+    print(f"=== Summary: hits / 10 (mode=1 guess, cold/hot/random={N_GUESSES} guesses) ===")
     for strat in strategies:
         avg_n = detail_df[f"{strat}_n"].mean()
         print(f"\n{strat} (avg training subset size: {avg_n:.0f}):")
