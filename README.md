@@ -27,3 +27,9 @@ Output: `data/swertres_history.csv` with columns
 ## Analysis
 
 TODO: chi-square uniformity test per digit position per draw slot.
+
+Run:
+
+    .venv/bin/python -m venv .venv  # if not already created
+    .venv/bin/pip install scipy pandas
+    .venv/bin/python analysis/bias_test.py
