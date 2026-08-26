@@ -14,9 +14,9 @@ from pathlib import Path
 import pandas as pd
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "swertres_history.csv"
-HOLDOUT_N = 10
+HOLDOUT_N = 3
 DIGIT_COLS = ["d1", "d2", "d3"]
-N_GUESSES = 3
+N_GUESSES = 5
 SLOTS = ["2PM", "5PM", "9PM"]
 
 
